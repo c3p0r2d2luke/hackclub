@@ -1,0 +1,18 @@
+<h1>Post Item</h1>
+<form id="postForm" enctype="multipart/form-data">
+Title: <input name="title" required/><br/>
+Description: <input name="description" required/><br/>
+Price: <input name="price" required/><br/>
+Image: <input type="file" name="image" required/><br/>
+<button>Submit for Approval</button>
+</form>
+<script src="js/js.cookie.min.js"></script>
+<script>
+document.getElementById('postForm').addEventListener('submit', async e=>{
+e.preventDefault();
+const formData = new FormData(e.target);
+formData.append('user', Cookies.get('user'));
+const res = await fetch('/.netlify/functions/post', {method:'POST', body:formData});
+alert(await res.text());
+});
+</script>
