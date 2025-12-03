@@ -1,0 +1,11 @@
+# netlify.toml
+
+[build]
+  # This tells Netlify that the files to deploy are in the current directory.
+  publish = "."
+
+# This section is crucial for making your proxy function work.
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
