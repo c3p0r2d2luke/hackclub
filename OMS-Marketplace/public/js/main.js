@@ -1,4 +1,3 @@
-// Load approved items
 async function loadItems(){
 const res = await fetch('/.netlify/functions/getItems');
 const items = await res.json();
