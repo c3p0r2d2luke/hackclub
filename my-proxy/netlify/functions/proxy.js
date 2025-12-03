@@ -1,34 +1,61 @@
 const fetch = require('node-fetch');
 
-exports.handler = async function(event) {
-    const { url } = event.queryStringParameters || {};
+function rewriteHTML(html, baseUrl) {
+    const encode = encodeURIComponent;
 
-    if (!url) {
-        return { statusCode: 400, body: 'Error: Please provide a "url" query parameter.' };
-    }
-
-    if (url.startsWith('http://localhost') || url.startsWith('127.0.0.1')) {
-        return { statusCode: 403, body: 'Error: Access to localhost is forbidden.' };
-    }
-
-    try {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-
-        const headers = {};
-        response.headers.forEach((v, n) => {
-            if (!['content-encoding', 'content-length', 'connection', 'transfer-encoding'].includes(n)) {
-                headers[n] = v;
+    html = html.replace(
+        /(href|src|action)=["']([^"']+)["']/gi,
+        (match, attr, value) => {
+            if (value.startsWith('http')) {
+                return `${attr}="/proxy?url=${encode(value)}"`;
             }
-        });
+            if (value.startsWith('//')) {
+                return `${attr}="/proxy?url=${encode("https:" + value)}"`;
+            }
+            if (value.startsWith('#')) return match;
+            const abs = new URL(value, baseUrl).href;
+            return `${attr}="/proxy?url=${encode(abs)}"`;
+        }
+    );
+
+    html = html.replace(
+        /url\(["']?([^"')]+)["']?\)/gi,
+        (match, value) => {
+            if (value.startsWith('http')) {
+                return `url("/proxy?url=${encode(value)}")`;
+            }
+            const abs = new URL(value, baseUrl).href;
+            return `url("/proxy?url=${encode(abs)}")`;
+        }
+    );
+
+    return html;
+}
+
+exports.handler = async function(event) {
+    const url = event.queryStringParameters?.url;
+    if (!url) return { statusCode: 400, body: 'Missing url' };
+
+    const res = await fetch(url);
+    const type = res.headers.get("content-type") || "";
+    const baseUrl = url;
+
+    if (type.includes("text/html")) {
+        let html = await res.text();
+        html = rewriteHTML(html, baseUrl);
 
         return {
             statusCode: 200,
-            headers,
-            body: Buffer.from(arrayBuffer).toString("base64"),
-            isBase64Encoded: true
+            headers: { "content-type": "text/html" },
+            body: html
         };
-    } catch (err) {
-        return { statusCode: 500, body: 'Error fetching URL: ' + err.message };
     }
+
+    const buf = Buffer.from(await res.arrayBuffer());
+    return {
+        statusCode: 200,
+        headers: { "content-type": type },
+        body: buf.toString("base64"),
+        isBase64Encoded: true
+    };
 };

@@ -1,18 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8" />
-    <title>Proxy</title>
+    <meta charset="UTF-8">
+    <title>Assignment Viewer</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; }
-        iframe { width: 100%; height: 100%; border: none; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; padding: 0;
+            background: #fafafa;
+        }
+        header {
+            background: #eee;
+            padding: 15px;
+            border-bottom: 1px solid #ccc;
+        }
+        h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        #frame {
+            width: 100%; height: calc(100vh - 60px);
+            border: none;
+        }
+        #url-box {
+            width: 300px;
+            padding: 6px;
+        }
+        #load-btn {
+            padding: 6px 12px;
+        }
     </style>
 </head>
+
 <body>
-    <iframe id="proxy-frame"></iframe>
+    <header>
+        <h1>Assignment Viewer</h1>
+        <input id="url-box" placeholder="Paste assignment link">
+        <button id="load-btn">Load</button>
+    </header>
+
+    <iframe id="frame"></iframe>
+
     <script>
-        const site = prompt("Enter URL to load:");
-        document.getElementById("proxy-frame").src = "/proxy?url=" + encodeURIComponent(site);
+        const frame = document.getElementById("frame");
+        document.getElementById("load-btn").onclick = () => {
+            const u = document.getElementById("url-box").value;
+            frame.src = "/proxy?url=" + encodeURIComponent(u);
+        };
     </script>
 </body>
 </html>
