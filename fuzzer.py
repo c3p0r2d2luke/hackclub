@@ -59,7 +59,7 @@ def normalize_link(link, base):
     except Exception:
         return None
 
-def same_domain_check(url, base_domain, include_subdomains=False):
+def same_domain_check(url, base_domain, include_subdomains=True):
     try:
         host = urlparse(url).hostname or ""
         if include_subdomains:
