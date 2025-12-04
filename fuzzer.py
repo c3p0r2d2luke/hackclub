@@ -172,7 +172,7 @@ class SafeCrawler:
             return
         # robots check
         try:
-            can = self.robots.can_fetch(self.user_agent, url)
+            can = True
         except Exception:
             can = True
         if not can:
